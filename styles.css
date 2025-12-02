@@ -181,6 +181,11 @@ main {
 	font-size: 1.3rem;
 }
 
+/* Card header container - keeps headers anchored */
+.card-header {
+	margin-bottom: 16px;
+}
+
 /* Enhanced section headers */
 .section-heading {
 	display: inline-flex;
@@ -188,22 +193,13 @@ main {
 	background: var(--very-light-purple);
 	border: 1px solid var(--border-color);
 	padding: 4px 12px;
-	margin: 0 0 14px 0;
+	margin: 0;
 	border-radius: 12px;
 	font-size: 1.05rem;
 	font-weight: 600;
 	letter-spacing: 0.3px;
 	white-space: nowrap;
-	/* keep text together like Pear Tree */
 	box-shadow: 0 1px 3px rgba(86, 72, 173, 0.08);
-}
-
-@media (max-width: 768px) {
-	.section-heading {
-		margin: -20px -20px 14px -20px;
-		font-size: 1.05rem;
-		padding: 8px 12px;
-	}
 }
 
 .card h3 {
@@ -431,13 +427,13 @@ main {
 .controls-header {
 	display: flex;
 	justify-content: space-between;
-	align-items: center;
+	align-items: flex-start;
 	flex-wrap: wrap;
-	gap: 10px;
+	gap: 12px;
 }
 
 .controls-header h2 {
-	margin-bottom: 0;
+	margin: 0;
 }
 
 .controls-panel {
@@ -449,8 +445,6 @@ main {
 	flex-direction: column;
 	gap: 8px;
 	min-width: 240px;
-	margin-bottom: 26px;
-	/* Added extra spacing below controls */
 }
 
 .pairing-controls {
