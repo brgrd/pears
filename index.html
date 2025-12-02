@@ -14,19 +14,19 @@
 		<header>
 			<div class="header-content">
 				<div class="logo-header">
-					<svg class="pear-logo-small" viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg"
+					<svg class="pear-logo-small" viewBox="0 0 290 290" xmlns="http://www.w3.org/2000/svg"
 						aria-hidden="true">
-						<defs>
-							<linearGradient id="pearGradientSmall" x1="0%" y1="0%" x2="0%" y2="100%">
-								<stop offset="0%" stop-color="#8A7BFF" />
-								<stop offset="60%" stop-color="#6A5FE0" />
-								<stop offset="100%" stop-color="#5648AD" />
-							</linearGradient>
-						</defs>
-						<path
-							d="M60 35 C50 10 70 10 65 35 C85 38 98 55 95 78 C93 100 80 120 60 132 C40 120 27 100 25 78 C22 55 35 38 55 35 Z"
-							fill="url(#pearGradientSmall)" stroke="#4a3a8f" stroke-width="2" />
-						<ellipse cx="50" cy="70" rx="10" ry="18" fill="rgba(255,255,255,0.25)" />
+						<circle cx="145" cy="145" r="145" fill="white" />
+						<g id="XMLID_998_">
+							<path id="XMLID_18_" style="fill:#91DC5A;"
+								d="M231.721,1.366c0,0,7.682,43.532-17.07,68.284   c-24.754,24.753-68.285,17.072-68.285,17.072s-8.535-42.678,17.072-68.284C189.043-7.17,231.721,1.366,231.721,1.366z" />
+							<path id="XMLID_999_" style="fill:#804C09;"
+								d="M160,75c0,8.284-6.716,15-15,15l0,0c-8.284,0-15-6.716-15-15V25   c0-8.284,6.716-15,15-15l0,0c8.284,0,15,6.716,15,15V75z" />
+							<path id="XMLID_1000_" style="fill:#7B68EE;"
+								d="M205,147.977V120c0-33.137-26.863-60-60-60s-60,26.863-60,60v27.977   C63.642,162.646,50,184.98,50,210c0,44.183,42.532,80,95,80c52.467,0,95-35.817,95-80C240,184.98,226.357,162.647,205,147.977z" />
+							<path id="XMLID_1001_" style="fill:#5648AD;"
+								d="M145,60c-33.137,0-60,26.863-60,60v27.977C63.642,162.646,50,184.98,50,210   c0,44.183,42.532,80,95,80C145,207,145,156,145,60z" />
+						</g>
 					</svg>
 					<h1>Pears</h1>
 				</div>
@@ -35,13 +35,13 @@
 
 		<main>
 			<div class="container">
-			<!-- Left Sidebar: Engineer Management -->
-			<aside class="sidebar">
-				<section class="card">
-					<div class="card-header">
-						<h2 class="section-heading">Seeds</h2>
-					</div>
-					<div class="engineer-input">
+				<!-- Left Sidebar: Engineer Management -->
+				<aside class="sidebar">
+					<section class="card">
+						<div class="card-header">
+							<h2 class="section-heading">Seeds</h2>
+						</div>
+						<div class="engineer-input">
 							<input type="text" id="engineerNameInput" placeholder="Add seed" />
 							<button id="addEngineerButton" class="btn btn-primary btn-sm">+</button>
 						</div>
@@ -51,20 +51,21 @@
 
 				<!-- Main Content Area -->
 				<div class="main-content">
-				<!-- Pear Tree Section -->
-				<section class="card buckets-container">
-					<div class="card-header">
-						<div class="controls-header">
-							<h2 class="section-heading">Pear Tree</h2>
-							<div class="controls-panel">
-								<div class="pairing-controls">
-									<button id="createBucketButton" class="btn btn-primary btn-sm">New Pear</button>
-									<button id="randomPairButton" class="btn btn-secondary btn-sm">Random Pears</button>
-									<button id="clearBucketsButton" class="btn btn-danger btn-sm">Clear All</button>
+					<!-- Pear Tree Section -->
+					<section class="card buckets-container">
+						<div class="card-header">
+							<div class="controls-header">
+								<h2 class="section-heading">Pear Tree</h2>
+								<div class="controls-panel">
+									<div class="pairing-controls">
+										<button id="createBucketButton" class="btn btn-primary btn-sm">New Pear</button>
+										<button id="randomPairButton" class="btn btn-secondary btn-sm">Random
+											Pears</button>
+										<button id="clearBucketsButton" class="btn btn-danger btn-sm">Clear All</button>
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
 						<div id="bucketsDisplay" class="buckets-display">
 							<p class="placeholder-text">Drag seeds here to create pears.</p>
 						</div>

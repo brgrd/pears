@@ -91,8 +91,7 @@ function addEngineer() {
 	const engineer = { id: Date.now(), name };
 	engineers.push(engineer);
 	engineerNameInput.value = '';
-	saveToStorage();
-	renderEngineers();
+	updateUI();
 }
 
 function getAssignedEngineerIds() {
@@ -192,9 +191,7 @@ function createRandomPairs() {
 			: [shuffled[i].id];
 		buckets.push({ ...createNewBucket(pair), id: Date.now() + i });
 	}
-	saveToStorage();
-	renderEngineers();
-	renderBuckets();
+	updateUI();
 }
 
 function deleteBucket(bucketId) {
@@ -223,7 +220,7 @@ function clearAllBuckets() {
 	if (buckets.length === 0) return;
 	if (!confirm('Are you sure you want to clear all pears?')) return;
 
-	buckets = [];
+	buckets = buckets.filter(b => b.locked);
 	updateUI();
 }
 
