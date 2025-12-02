@@ -192,7 +192,8 @@ main {
 .engineer-input {
 	display: flex;
 	gap: 8px;
-	margin-bottom: 15px;
+    /* Ensure space between input row and first engineer item */
+    margin-bottom: 12px;
 }
 
 .engineer-input input {
@@ -377,6 +378,7 @@ main {
 	flex-direction: column;
 	gap: 8px;
 	min-width: 240px;
+	margin-bottom: 12px; /* add space before drop zone/buckets */
 }
 
 .pairing-controls {
@@ -660,6 +662,12 @@ main {
 
 	.card {
 		padding: 16px;
+		border-radius: 12px;
+	}
+
+	.section-heading {
+		font-size: 1rem;
+		padding: 6px 12px;
 	}
 
 	.engineer-input {
@@ -668,13 +676,14 @@ main {
 
 	.controls-header {
 		flex-direction: column;
-		align-items: stretch;
+		align-items: flex-start;
 		gap: 12px;
 	}
 
 	.controls-panel {
 		min-width: 100%;
 		width: 100%;
+		border-radius: 10px;
 	}
 
 	.pairing-controls {
@@ -705,7 +714,7 @@ main {
 	}
 
 	.buckets-container {
-		padding: 8px;
+		padding: 16px;
 	}
 
 	.buckets-display {
