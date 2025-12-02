@@ -698,7 +698,7 @@ main {
 	.controls-panel {
 		min-width: 100%;
 		width: 100%;
-		border-radius: 10px;
+		border-radius: 10px 10px 0 0;
 	}
 
 	.pairing-controls {
@@ -707,25 +707,6 @@ main {
 
 	.pairing-controls .btn {
 		width: 100%;
-	}
-
-	.manual-pair-selectors {
-		flex-direction: column;
-		align-items: stretch;
-	}
-
-	.pair-separator {
-		text-align: center;
-	}
-
-	.pair-item {
-		flex-direction: column;
-		gap: 12px;
-		align-items: stretch;
-	}
-
-	.pair-actions {
-		justify-content: center;
 	}
 
 	.buckets-container {
