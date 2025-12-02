@@ -17,7 +17,7 @@ A lightweight pair programming assignment tool for engineering teams. Easily man
 
 ## Demo
 
-Visit the live demo: [Your GitHub Pages URL will be here]
+Visit the live demo: **https://brgrd.github.io/pears/**
 
 ## Getting Started
 
@@ -25,8 +25,8 @@ Visit the live demo: [Your GitHub Pages URL will be here]
 
 1. **Fork or clone this repository**
    ```bash
-   git clone https://github.com/yourusername/Pears.git
-   cd Pears
+   git clone https://github.com/brgrd/pears.git
+   cd pears
    ```
 
 2. No build step or secrets required. This is a static site.
@@ -43,7 +43,7 @@ Visit the live demo: [Your GitHub Pages URL will be here]
    - Click **Settings** → **Pages**
    - Under "Source", select **main** branch
    - Click **Save**
-   - Your site will be live at: `https://yourusername.github.io/Pears/`
+   - Your site will be live at: `https://yourusername.github.io/reponame/`
 
 ### Local Development
 
@@ -65,33 +65,34 @@ python -m http.server 8000
 ### No Login
 This app has no authentication and is intended for simple team use on GitHub Pages.
 
-### Managing Engineers
-1. Type an engineer's name in the input field
-2. Click "Add Engineer" or press Enter
-3. Remove engineers by clicking the × button next to their name
+### Managing Seeds
+1. Type a seed name (engineer name) in the input field
+2. Click the "+" button or press Enter
+3. Remove seeds by clicking the × button next to their name
 
 ### Creating Assignments
 
 #### Create Pears
-1. Click **"New Pear"** to create an empty pear
-2. Drag engineers from the sidebar into buckets
+1. Click **"New Pear"** button to create an empty pear
+2. Drag seeds from the "Seeds" section into the new pear drop zone or existing pears
 3. Pears can contain:
-   - **Pairs** (2 engineers)
-   - **Solo** (1 engineer)
-   - **Groups** (3+ engineers)
+   - **Pairs** (2 seeds)
+   - **Solo** (1 seed)
+   - **Groups** (3+ seeds)
 
 #### Random Pears
 - Click **"Random Pears"** to automatically create pears from all available seeds
 - Solo pears are created when an odd seed remains
 
 #### Drag & Drop
-- Drag engineers from the sidebar into any bucket
-- Drag engineers between buckets to reassign
-- Seeds assigned to pears appear dimmed in the sidebar and are not draggable
+- Drag seeds from the sidebar into any pear
+- Drag seeds between pears to reassign
+- Seeds assigned to pears appear faded in the sidebar and cannot be dragged
 
-### Managing Buckets
-- **Lock/Unlock**: Protect pear contents from changes
-- **Delete**: Remove a pear and return seeds to available pool
+### Managing Pears
+- **Lock/Unlock**: Click the lock icon to protect pear contents from changes
+- **Active/OOO**: Toggle the OOO status button to mark a pear out of office
+- **Delete**: Click × to remove a pear and return seeds to available pool
 - **Clear All**: Remove all pears at once
 
 ### Out of Office
@@ -107,7 +108,7 @@ The application uses a purple color scheme based on `#5648AD`:
 ## File Structure
 
 ```
-Pears/
+pears/
 ├── index.html      # Main HTML structure
 ├── styles.css      # All styling and responsive design
 ├── app.js          # Application logic and state management
