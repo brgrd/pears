@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Pears - Pair Programming Assignment Tool</title>
+	<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+	<!-- Main Application -->
+	<div id="mainApp" class="main-app">
+		<header>
+			<div class="header-content">
+				<div class="logo-header">
+					<svg class="pear-logo-small" viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg"
+						aria-hidden="true">
+						<defs>
+							<linearGradient id="pearGradientSmall" x1="0%" y1="0%" x2="0%" y2="100%">
+								<stop offset="0%" stop-color="#8A7BFF" />
+								<stop offset="60%" stop-color="#6A5FE0" />
+								<stop offset="100%" stop-color="#5648AD" />
+							</linearGradient>
+						</defs>
+						<path
+							d="M60 35 C50 10 70 10 65 35 C85 38 98 55 95 78 C93 100 80 120 60 132 C40 120 27 100 25 78 C22 55 35 38 55 35 Z"
+							fill="url(#pearGradientSmall)" stroke="#4a3a8f" stroke-width="2" />
+						<ellipse cx="50" cy="70" rx="10" ry="18" fill="rgba(255,255,255,0.25)" />
+					</svg>
+					<h1>Pears</h1>
+				</div>
+			</div>
+		</header>
+
+		<main>
+			<div class="container">
+				<!-- Left Sidebar: Engineer Management -->
+				<aside class="sidebar">
+					<section class="card">
+						<h2 class="section-heading">Seeds</h2>
+						<div class="engineer-input">
+							<input type="text" id="engineerNameInput" placeholder="Add seed" />
+							<button id="addEngineerButton" class="btn btn-primary btn-sm">+</button>
+						</div>
+						<ul id="engineerList" class="engineer-list"></ul>
+					</section>
+				</aside>
+
+				<!-- Main Content Area -->
+				<div class="main-content">
+					<!-- Pear Tree Section -->
+					<section class="card buckets-container">
+						<div class="controls-header">
+							<h2 class="section-heading">Pear Tree</h2>
+							<div class="controls-panel">
+								<div class="pairing-controls">
+									<button id="createBucketButton" class="btn btn-primary btn-sm">New Pear</button>
+									<button id="randomPairButton" class="btn btn-secondary btn-sm">Random Pears</button>
+									<button id="clearBucketsButton" class="btn btn-danger btn-sm">Clear All</button>
+								</div>
+							</div>
+						</div>
+						<div id="bucketsDisplay" class="buckets-display">
+							<p class="placeholder-text">Drag seeds here to create pears.</p>
+						</div>
+					</section>
+				</div>
+			</div>
+		</main>
+	</div>
+
+	<script src="app.js"></script>
+</body>
+
+</html>
