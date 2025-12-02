@@ -1,3 +1,21 @@
+/* Mobile-specific spacing for Pear Tree */
+@media (max-width: 768px) {
+	.controls-panel {
+		margin-bottom: 12px; /* maintain a comfortable gap on mobile */
+	}
+	.buckets-display {
+		justify-content: center;
+		gap: 12px;
+		padding-bottom: 8px;
+		min-height: 140px;
+	}
+	.new-pear-zone {
+		padding: 24px 18px; /* a bit more breathing room on mobile */
+		width: 100%;
+		max-width: 100%;
+		min-width: unset;
+	}
+}
 :root {
 	--primary-purple: #5648AD;
 	--dark-purple: #4a3a8f;
@@ -115,27 +133,13 @@ main {
 	font-size: 1.3rem;
 }
 
-/* Card header container - keeps headers anchored */
 .card-header {
-	margin-bottom: 16px;
+	display: none;
 }
 
 /* Enhanced section headers */
 .section-heading {
-	display: inline-flex;
-	align-items: center;
-	background: var(--very-light-purple);
-	border: 1px solid var(--border-color);
-	padding: 4px 12px;
-	margin: 0;
-	border-radius: 12px;
-	font-size: 1.05rem;
-	font-weight: 600;
-	letter-spacing: 0.3px;
-	white-space: nowrap;
-	box-shadow: 0 1px 3px rgba(86, 72, 173, 0.08);
-    font-family: 'Permanent Marker', cursive;
-    font-weight: 400;
+	display: none;
 }
 
 .card h3 {
@@ -363,10 +367,9 @@ main {
 /* Assignment Controls */
 .controls-header {
 	display: flex;
-	justify-content: space-between;
-	align-items: flex-start;
-	flex-wrap: wrap;
-	gap: 12px;
+	flex-direction: column;
+	gap: 0;
+	margin-bottom: 0;
 }
 
 .controls-header h2 {
@@ -376,13 +379,13 @@ main {
 .controls-panel {
 	background: var(--very-light-purple);
 	border: 1px solid var(--border-color);
-	border-radius: 10px;
+	border-radius: 10px 10px 0 0;
 	padding: 10px 12px;
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
-	min-width: 240px;
-	margin-bottom: 12px; /* add space before drop zone/buckets */
+	width: 100%;
+	margin-bottom: 0;
 }
 
 .pairing-controls {
@@ -412,11 +415,12 @@ main {
 
 /* Persistent new pear creation zone */
 .new-pear-zone {
-	border: 2px dashed var(--border-color);
-	border-radius: 12px;
-	padding: 28px 22px;
+	border: 1px solid var(--border-color);
+	border-top: none;
+	border-radius: 0 0 10px 10px;
+	padding: 20px;
 	background: linear-gradient(135deg, #faf9ff 0%, #f3f0fb 100%);
-	width: clamp(260px, 31%, 340px);
+	width: 100%;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -640,6 +644,13 @@ main {
 }
 
 @media (max-width: 768px) {
+	/* adjust header bar to match mobile card padding */
+	.card-header {
+		margin: -16px -16px 12px -16px;
+		padding: 8px 14px;
+		border-top-left-radius: 12px;
+		border-top-right-radius: 12px;
+	}
 	body {
 		overflow-x: hidden;
 	}

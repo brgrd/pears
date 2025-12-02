@@ -11,9 +11,10 @@ A lightweight pair programming assignment tool for engineering teams. Easily man
 - **Drag & Drop**: Intuitive drag-and-drop interface for manual assignment
 - **Seed Management**: Easily add and remove seeds from your team
 - **OOO Pears**: Mark a pear OOO at the bucket level
-- **Lock Pears**: Protect certain pears from changes
+- **Lock Pears**: Protect certain pears from changes (locked pears are preserved when clearing all)
 - **Local Storage**: All data persists in your browser
-- **Responsive Design**: Works on desktop and mobile devices
+- **Mobile-First Design**: Fully responsive layout optimized for desktop and mobile devices
+- **Clean Interface**: Purple-themed design with custom pear logo and Permanent Marker font
 
 ## Demo
 
@@ -93,7 +94,7 @@ This app has no authentication and is intended for simple team use on GitHub Pag
 - **Lock/Unlock**: Click the lock icon to protect pear contents from changes
 - **Active/OOO**: Toggle the OOO status button to mark a pear out of office
 - **Delete**: Click × to remove a pear and return seeds to available pool
-- **Clear All**: Remove all pears at once
+- **Clear All**: Remove all unlocked pears at once (locked pears are preserved)
 
 ### Out of Office
 - Toggle a pear to OOO to mark the entire group out of office (bucket-level)
