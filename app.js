@@ -1,8 +1,7 @@
 // State Management
 let engineers = [];
-let buckets = []; // Array of bucket objects
-// Per-seed OOO removed; OOO now designated at bucket level
-let draggedEngineer = null; // Currently dragged engineer
+let buckets = [];
+let draggedEngineer = null;
 
 // DOM Elements
 const engineerNameInput = document.getElementById('engineerNameInput');
@@ -35,7 +34,6 @@ function safeJsonParse(item, fallback = []) {
 		const parsed = JSON.parse(item);
 		return Array.isArray(parsed) ? parsed : fallback;
 	} catch (e) {
-		console.error('Parse error:', e);
 		return fallback;
 	}
 }
@@ -78,9 +76,7 @@ function addEngineer() {
 	const name = engineerNameInput.value.trim();
 	if (name === '') return;
 
-	// Ensure engineers is an array
 	if (!Array.isArray(engineers)) {
-		console.error('Engineers is not an array, resetting');
 		engineers = [];
 	}
 
