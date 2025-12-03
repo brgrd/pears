@@ -1,16 +1,16 @@
 # Pears
 
-A lightweight pair programming assignment tool for engineering teams. Easily manage team members and create pears (groups) using random or manual assignment.
+A lightweight pair programming assignment tool for teams. Easily manage team members and create pears (groups) using random or manual assignment.
 
 ![Pears Logo](https://img.shields.io/badge/Pears-Pair_Programming-5648AD?style=for-the-badge)
 
 ## Features
 
-- **Pear Buckets**: Drag and drop seeds (engineers) into flexible buckets (pairs, solos, or groups)
+- **Pears**: Drag and drop seeds into flexible pears (pairs, solos, or groups)
 - **Random Pears**: Automatically create random pears from available seeds
 - **Drag & Drop**: Intuitive drag-and-drop interface for manual assignment
 - **Seed Management**: Easily add and remove seeds from your team
-- **OOO Pears**: Mark a pear OOO at the bucket level
+- **OOO Pears**: Mark a pear OOO at the pear level
 - **Lock Pears**: Protect certain pears from changes (locked pears are preserved when clearing all)
 - **Local Storage**: All data persists in your browser
 - **Mobile-First Design**: Fully responsive layout optimized for desktop and mobile devices
@@ -67,7 +67,7 @@ python -m http.server 8000
 This app has no authentication and is intended for simple team use on GitHub Pages.
 
 ### Managing Seeds
-1. Type a seed name (engineer name) in the input field
+1. Type a seed name in the input field
 2. Click the "+" button or press Enter
 3. Remove seeds by clicking the × button next to their name
 
@@ -97,7 +97,7 @@ This app has no authentication and is intended for simple team use on GitHub Pag
 - **Clear All**: Remove all unlocked pears at once (locked pears are preserved)
 
 ### Out of Office
-- Toggle a pear to OOO to mark the entire group out of office (bucket-level)
+- Toggle a pear to OOO to mark the entire group out of office (pear-level)
 
 ## Color Theme
 
@@ -166,7 +166,7 @@ MIT License - feel free to use this for your team!
 
 ## Credits
 
-Created for engineering teams who pair program.
+Created for teams who pair program.
 
 ---
 
