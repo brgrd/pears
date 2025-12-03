@@ -1,7 +1,26 @@
+// Constants
+const STORAGE_KEYS = {
+	ENGINEERS: 'pearsEngineers',
+	BUCKETS: 'pearsBuckets'
+};
+
+const MESSAGES = {
+	ENGINEER_EXISTS: 'Seed already exists!',
+	INSUFFICIENT_SEEDS: 'Need at least 2 available seeds to create random pairs!',
+	CONFIRM_CLEAR: 'Are you sure you want to clear all pears?',
+	SHARE_SUCCESS: 'Copied!',
+	URL_LOAD_ERROR: 'Failed to load from URL:'
+};
+
+const UI_TIMINGS = {
+	SHARE_FEEDBACK_DURATION: 2000
+};
+
 // State Management
 let engineers = [];
 let buckets = [];
 let draggedEngineer = null;
+let assignedEngineerIdsCache = null;
 
 // DOM Elements
 const engineerNameInput = document.getElementById('engineerNameInput');
@@ -29,8 +48,8 @@ function init() {
 
 // Storage Functions
 function saveToStorage() {
-	localStorage.setItem('pearsEngineers', JSON.stringify(engineers));
-	localStorage.setItem('pearsBuckets', JSON.stringify(buckets));
+	localStorage.setItem(STORAGE_KEYS.ENGINEERS, JSON.stringify(engineers));
+	localStorage.setItem(STORAGE_KEYS.BUCKETS, JSON.stringify(buckets));
 	localStorage.removeItem('pearsAuthenticated'); // Clean up old auth data
 }
 
@@ -45,8 +64,8 @@ function safeJsonParse(item, fallback = []) {
 }
 
 function loadFromStorage() {
-	engineers = safeJsonParse(localStorage.getItem('pearsEngineers'));
-	buckets = safeJsonParse(localStorage.getItem('pearsBuckets'));
+	engineers = safeJsonParse(localStorage.getItem(STORAGE_KEYS.ENGINEERS));
+	buckets = safeJsonParse(localStorage.getItem(STORAGE_KEYS.BUCKETS));
 
 	// Clean up invalid engineer references in buckets
 	const validIds = new Set(engineers.map(e => e.id));
@@ -60,36 +79,41 @@ function loadFromStorage() {
 
 // URL Sharing Functions
 function encodeStateToUrl() {
-	const state = { engineers, buckets };
-	const json = JSON.stringify(state);
-	// Use btoa with proper UTF-8 encoding
-	const encoded = btoa(String.fromCharCode(...new TextEncoder().encode(json)));
-	return `#data=${encoded}`;
+	try {
+		const state = { engineers, buckets };
+		const json = JSON.stringify(state);
+		// Use btoa with proper UTF-8 encoding
+		const encoded = btoa(String.fromCharCode(...new TextEncoder().encode(json)));
+		return `#data=${encoded}`;
+	} catch (error) {
+		console.error('Failed to encode state:', error);
+		return '#';
+	}
 }
 
 function loadFromUrl() {
 	const hash = window.location.hash;
 	if (!hash.startsWith('#data=')) return false;
-	
+
 	try {
 		const encoded = hash.substring(6); // Remove '#data='
 		// Decode with proper UTF-8 support
 		const bytes = Uint8Array.from(atob(encoded), c => c.charCodeAt(0));
 		const json = new TextDecoder().decode(bytes);
 		const state = JSON.parse(json);
-		
+
 		if (state.engineers && Array.isArray(state.engineers)) {
 			engineers = state.engineers;
 		}
 		if (state.buckets && Array.isArray(state.buckets)) {
 			buckets = state.buckets;
 		}
-		
+
 		// Save to localStorage for persistence
 		saveToStorage();
 		return true;
-	} catch (e) {
-		console.warn('Failed to load from URL:', e);
+	} catch (error) {
+		console.warn(MESSAGES.URL_LOAD_ERROR, error);
 		return false;
 	}
 }
@@ -104,23 +128,24 @@ function handleHashChange() {
 
 function shareUrl() {
 	const url = window.location.origin + window.location.pathname + encodeStateToUrl();
-	
+
 	// Copy to clipboard
 	navigator.clipboard.writeText(url).then(() => {
 		// Show success feedback
 		const originalText = shareUrlButton.textContent;
-		shareUrlButton.textContent = 'Copied!';
+		shareUrlButton.textContent = MESSAGES.SHARE_SUCCESS;
 		shareUrlButton.style.backgroundColor = '#28a745';
-		
+
 		setTimeout(() => {
 			shareUrlButton.textContent = originalText;
 			shareUrlButton.style.backgroundColor = '';
-		}, 2000);
-	}).catch(() => {
+		}, UI_TIMINGS.SHARE_FEEDBACK_DURATION);
+	}).catch((error) => {
+		console.warn('Clipboard write failed:', error);
 		// Fallback: show URL in alert for manual copy
 		alert('Share this URL:\n\n' + url);
 	});
-	
+
 	// Update browser URL without reload
 	history.replaceState(null, '', url);
 }
@@ -148,14 +173,14 @@ function setupEventListeners() {
 // Engineer Management
 function addEngineer() {
 	const name = engineerNameInput.value.trim();
-	if (name === '') return;
+	if (name === '' || name.length > 100) return;
 
 	if (!Array.isArray(engineers)) {
 		engineers = [];
 	}
 
 	if (engineers.some(e => e.name.toLowerCase() === name.toLowerCase())) {
-		alert('Engineer already exists!');
+		alert(MESSAGES.ENGINEER_EXISTS);
 		return;
 	}
 	const engineer = { id: Date.now(), name };
@@ -165,21 +190,32 @@ function addEngineer() {
 }
 
 function getAssignedEngineerIds() {
-	return new Set(buckets.flatMap(b => b.engineers || []));
+	if (assignedEngineerIdsCache === null) {
+		assignedEngineerIdsCache = new Set(buckets.flatMap(b => b.engineers || []));
+	}
+	return assignedEngineerIdsCache;
+}
+
+function invalidateAssignedIdsCache() {
+	assignedEngineerIdsCache = null;
 }
 
 function renderEngineers() {
-	engineerList.innerHTML = '';
 	const assignedIds = getAssignedEngineerIds();
+	const fragment = document.createDocumentFragment();
+
 	if (engineers.length === 0) {
 		engineerList.innerHTML = '<li class="placeholder-text" style="list-style: none; text-align: center; padding: 20px; font-size: 0.85rem;">No seeds yet.</li>';
 		return;
 	}
+
 	engineers.forEach(seed => {
 		const isInPear = assignedIds.has(seed.id);
 		const li = document.createElement('li');
 		li.className = 'engineer-item';
 		li.dataset.engineerId = seed.id;
+		li.setAttribute('role', 'listitem');
+		li.setAttribute('aria-label', `Seed: ${seed.name}`);
 		if (isInPear) {
 			li.classList.add('in-bucket');
 			// Do NOT set draggable; seed is unavailable once in pear tree
@@ -205,6 +241,7 @@ function renderEngineers() {
 		removeBtn.className = 'remove-engineer';
 		removeBtn.textContent = '×';
 		removeBtn.title = 'Remove seed';
+		removeBtn.setAttribute('aria-label', `Remove ${seed.name}`);
 		removeBtn.onclick = e => {
 			e.stopPropagation();
 			removeEngineer(seed.id);
@@ -212,13 +249,19 @@ function renderEngineers() {
 		actionsDiv.appendChild(removeBtn);
 		li.appendChild(nameSpan);
 		li.appendChild(actionsDiv);
-		engineerList.appendChild(li);
+		fragment.appendChild(li);
 	});
+
+	engineerList.innerHTML = '';
+	engineerList.appendChild(fragment);
 }
 
 // Fully remove a seed from all pears and seed list
-function updateUI() {
-	saveToStorage();
+function updateUI(skipSave = false) {
+	invalidateAssignedIdsCache();
+	if (!skipSave) {
+		saveToStorage();
+	}
 	renderEngineers();
 	renderBuckets();
 }
@@ -233,9 +276,13 @@ function removeEngineer(id) {
 
 // Bucket Functions
 function createNewBucket(engineerIds = []) {
+	const engineerArray = Array.isArray(engineerIds)
+		? engineerIds.filter(id => typeof id === 'number')
+		: (typeof engineerIds === 'number' ? [engineerIds] : []);
+
 	return {
 		id: Date.now(),
-		engineers: Array.isArray(engineerIds) ? engineerIds : [engineerIds],
+		engineers: engineerArray,
 		locked: false,
 		ooo: false
 	};
@@ -261,7 +308,7 @@ function createRandomPairs() {
 	const inBuckets = buckets.flatMap(b => b.engineers);
 	const available = engineers.filter(e => !inBuckets.includes(e.id));
 	if (available.length < 2) {
-		alert('Need at least 2 available seeds to create random pairs!');
+		alert(MESSAGES.INSUFFICIENT_SEEDS);
 		return;
 	}
 	const shuffled = shuffle(available);
@@ -290,7 +337,7 @@ function toggleBucketLock(bucketId) {
 
 function removeEngineerFromBucket(bucketId, engineerId) {
 	const bucket = buckets.find(b => b.id === bucketId);
-	if (!bucket || bucket.locked) return;
+	if (!bucket || bucket.locked || !Array.isArray(bucket.engineers)) return;
 
 	bucket.engineers = bucket.engineers.filter(id => id !== engineerId);
 	updateUI();
@@ -298,7 +345,7 @@ function removeEngineerFromBucket(bucketId, engineerId) {
 
 function clearAllBuckets() {
 	if (buckets.length === 0) return;
-	if (!confirm('Are you sure you want to clear all pears?')) return;
+	if (!confirm(MESSAGES.CONFIRM_CLEAR)) return;
 
 	buckets = buckets.filter(b => b.locked);
 	updateUI();
@@ -313,7 +360,7 @@ function toggleBucketOOO(bucketId) {
 }
 
 function renderBuckets() {
-	bucketsDisplay.innerHTML = '';
+	const fragment = document.createDocumentFragment();
 	const newZone = document.createElement('div');
 	newZone.className = 'new-pear-zone';
 	newZone.setAttribute('role', 'group');
@@ -337,12 +384,14 @@ function renderBuckets() {
 		updateUI();
 	});
 
-	bucketsDisplay.appendChild(newZone);
+	fragment.appendChild(newZone);
 
 	buckets.forEach((bucket, index) => {
 		const bucketDiv = document.createElement('div');
 		bucketDiv.className = 'bucket';
 		bucketDiv.dataset.bucketId = bucket.id;
+		bucketDiv.setAttribute('role', 'region');
+		bucketDiv.setAttribute('aria-label', `Pear ${index + 1}`);
 
 		if (bucket.locked) bucketDiv.classList.add('locked');
 
@@ -367,17 +416,20 @@ function renderBuckets() {
 		lockBtn.className = 'lock-bucket-btn';
 		lockBtn.textContent = bucket.locked ? 'Locked' : 'Lock';
 		lockBtn.title = bucket.locked ? 'Unlock pear' : 'Lock pear';
+		lockBtn.setAttribute('aria-label', bucket.locked ? 'Unlock pear' : 'Lock pear');
 		lockBtn.onclick = () => toggleBucketLock(bucket.id);
 		const oooBtn = document.createElement('button');
 		oooBtn.className = 'ooo-bucket-btn';
 		oooBtn.textContent = bucket.ooo ? 'OOO' : 'Active';
 		oooBtn.title = bucket.ooo ? 'Mark pear active' : 'Mark pear out of office';
+		oooBtn.setAttribute('aria-label', bucket.ooo ? 'Mark pear active' : 'Mark pear out of office');
 		oooBtn.onclick = () => toggleBucketOOO(bucket.id);
 
 		const deleteBtn = document.createElement('button');
 		deleteBtn.className = 'delete-bucket-btn';
 		deleteBtn.textContent = '×';
 		deleteBtn.title = 'Delete pear';
+		deleteBtn.setAttribute('aria-label', `Delete pear ${index + 1}`);
 		deleteBtn.onclick = () => deleteBucket(bucket.id);
 
 		actions.appendChild(lockBtn);
@@ -406,12 +458,15 @@ function renderBuckets() {
 					engDiv.classList.remove('dragging');
 					draggedEngineer = null;
 				});
-			} const nameSpan = document.createElement('span');
+			}
+
+			const nameSpan = document.createElement('span');
 			nameSpan.textContent = engineer.name;
 
 			const removeBtn = document.createElement('button');
 			removeBtn.className = 'remove-from-bucket';
 			removeBtn.textContent = '×';
+			removeBtn.setAttribute('aria-label', `Remove ${engineer.name} from pear`);
 			removeBtn.onclick = () => removeEngineerFromBucket(bucket.id, engId);
 
 			if (bucket.locked) {
@@ -432,9 +487,11 @@ function renderBuckets() {
 		bucketDiv.appendChild(header);
 		bucketDiv.appendChild(engineersDiv);
 		bucketDiv.appendChild(count);
-		bucketsDisplay.appendChild(bucketDiv);
+		fragment.appendChild(bucketDiv);
 	});
 
+	bucketsDisplay.innerHTML = '';
+	bucketsDisplay.appendChild(fragment);
 }
 
 function handleBucketEngineerDragStart(e) {
@@ -451,9 +508,8 @@ function handleBucketEngineerDragStart(e) {
 	e.target.classList.add('dragging');
 	e.dataTransfer.effectAllowed = 'move';
 
-	// Remove from current bucket
+	// Remove from current bucket (save will happen on drop)
 	bucket.engineers = bucket.engineers.filter(id => id !== engineerId);
-	saveToStorage();
 }
 
 function handleBucketDragOver(e) {
@@ -479,6 +535,8 @@ function handleBucketDrop(e) {
 	bucketDiv.classList.remove('drag-over');
 
 	const bucketId = parseInt(bucketDiv.dataset.bucketId);
+	if (isNaN(bucketId)) return;
+
 	const bucket = buckets.find(b => b.id === bucketId);
 
 	if (!bucket || bucket.locked || !draggedEngineer) return;
@@ -486,6 +544,9 @@ function handleBucketDrop(e) {
 	// Add seed to pear if not already there (avoid duplicates within same pear)
 	if (!bucket.engineers.includes(draggedEngineer)) {
 		bucket.engineers.push(draggedEngineer);
+		updateUI();
+	} else {
+		// If already exists, still need to re-render to restore drag source
 		updateUI();
 	}
 }
@@ -519,7 +580,7 @@ function handlePearTreeDrop(e) {
 	e.preventDefault();
 	bucketsDisplay.classList.remove('drag-over-empty');
 
-	if (!draggedEngineer) return;
+	if (!draggedEngineer || typeof draggedEngineer !== 'number') return;
 
 	buckets.push(createNewBucket(draggedEngineer));
 	updateUI();
