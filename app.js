@@ -173,6 +173,16 @@ function createBucket() {
 	renderBuckets();
 }
 
+// Fisher-Yates shuffle algorithm for unbiased randomization
+function shuffle(array) {
+	const shuffled = [...array];
+	for (let i = shuffled.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+	}
+	return shuffled;
+}
+
 function createRandomPairs() {
 	const inBuckets = buckets.flatMap(b => b.engineers);
 	const available = engineers.filter(e => !inBuckets.includes(e.id));
@@ -180,7 +190,7 @@ function createRandomPairs() {
 		alert('Need at least 2 available seeds to create random pairs!');
 		return;
 	}
-	const shuffled = [...available].sort(() => Math.random() - 0.5);
+	const shuffled = shuffle(available);
 	for (let i = 0; i < shuffled.length; i += 2) {
 		const pair = i + 1 < shuffled.length
 			? [shuffled[i].id, shuffled[i + 1].id]
