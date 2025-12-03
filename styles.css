@@ -1,15 +1,15 @@
 :root {
-	--primary-purple: #5648AD;
-	--dark-purple: #4a3a8f;
-	--light-purple: #7B68EE;
-	--very-light-purple: #e8e4f3;
-	--background: #f5f3fa;
-	--card-background: #ffffff;
-	--text-primary: #2d2d2d;
-	--text-secondary: #666666;
-	--border-color: #d4cde8;
-	--danger: #dc3545;
-	--success: #28a745;
+	--primary-purple: #7B68EE;
+	--dark-purple: #5648AD;
+	--light-purple: #9580FF;
+	--very-light-purple: #3d3d45;
+	--background: #2b2d31;
+	--card-background: #36383d;
+	--text-primary: #e8e8ea;
+	--text-secondary: #b5b8c0;
+	--border-color: #4a4c52;
+	--danger: #ff6b7a;
+	--success: #4ade80;
 }
 
 * {
@@ -64,7 +64,6 @@ header {
 	color: white;
 	font-family: 'Permanent Marker', cursive;
 	font-weight: 400;
-	/* ensure not bold */
 }
 
 main {
@@ -120,7 +119,6 @@ main {
 	display: none;
 }
 
-/* Enhanced section headers */
 .section-heading {
 	display: none;
 }
@@ -184,7 +182,6 @@ main {
 .seed-input {
 	display: flex;
 	gap: 8px;
-	/* Ensure space between input row and first seed item */
 	margin-bottom: 12px;
 }
 
@@ -268,7 +265,7 @@ main {
 .seed-item.in-pear:hover,
 .seed-item.in-pear:hover {
 	border-color: var(--border-color);
-	/* no highlight */
+
 }
 
 .seed-item.in-pear .remove-seed,
@@ -296,12 +293,12 @@ main {
 
 /* Pear-level OOO */
 .pear.ooo {
-	background: linear-gradient(135deg, #fdfaf2 0%, #f0e8c8 100%);
-	border: 2px dashed var(--border-color);
+	background: linear-gradient(135deg, #3d3528 0%, #4a4033 100%);
+	border: 2px dashed #6a5d47;
 }
 
 .pear.ooo .pear-title {
-	color: #c47c2c;
+	color: #f0b86e;
 	font-weight: 700;
 }
 
@@ -406,14 +403,14 @@ main {
 	border-top: none;
 	border-radius: 0 0 10px 10px;
 	padding: 20px;
-	background: linear-gradient(135deg, #faf9ff 0%, #f3f0fb 100%);
+	background: linear-gradient(135deg, var(--card-background) 0%, var(--very-light-purple) 100%);
 	width: 100%;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
 	text-align: center;
-	box-shadow: inset 0 0 0 3px rgba(86, 72, 173, 0.05);
+	box-shadow: inset 0 0 0 3px rgba(123, 104, 238, 0.1);
 	transition: background 0.25s, border-color 0.25s, transform 0.25s;
 }
 
@@ -549,7 +546,7 @@ main {
 }
 
 .pear-seed {
-	background: white;
+	background: var(--background);
 	padding: 8px 10px;
 	border-radius: 6px;
 	font-size: 0.85rem;
@@ -632,7 +629,7 @@ main {
 
 @media (max-width: 768px) {
 
-	/* adjust header bar to match mobile card padding */
+
 	.card-header {
 		margin: -16px -16px 12px -16px;
 		padding: 8px 14px;

@@ -32,9 +32,7 @@ const clearPearsButton = document.getElementById('clearPearsButton');
 const shareUrlButton = document.getElementById('shareUrlButton');
 const pearsDisplay = document.getElementById('pearsDisplay');
 
-// Initialize App
 function init() {
-	// Try loading from URL first, then fall back to localStorage
 	if (!loadFromUrl()) {
 		loadFromStorage();
 	}
@@ -42,7 +40,6 @@ function init() {
 	renderSeeds();
 	renderPears();
 	setupPearTreeDropZone();
-	// Update URL whenever state changes
 	window.addEventListener('hashchange', handleHashChange);
 }
 
@@ -50,7 +47,7 @@ function init() {
 function saveToStorage() {
 	localStorage.setItem(STORAGE_KEYS.SEEDS, JSON.stringify(seeds));
 	localStorage.setItem(STORAGE_KEYS.PEARS, JSON.stringify(pears));
-	localStorage.removeItem('pearsAuthenticated'); // Clean up old auth data
+	localStorage.removeItem('pearsAuthenticated');
 }
 
 function safeJsonParse(item, fallback = []) {
@@ -77,12 +74,10 @@ function loadFromStorage() {
 		.filter(b => b.seeds.length > 0);
 }
 
-// URL Sharing Functions
 function encodeStateToUrl() {
 	try {
 		const state = { seeds, pears };
 		const json = JSON.stringify(state);
-		// Use btoa with proper UTF-8 encoding
 		const encoded = btoa(String.fromCharCode(...new TextEncoder().encode(json)));
 		return `#data=${encoded}`;
 	} catch (error) {
@@ -96,8 +91,7 @@ function loadFromUrl() {
 	if (!hash.startsWith('#data=')) return false;
 
 	try {
-		const encoded = hash.substring(6); // Remove '#data='
-		// Decode with proper UTF-8 support
+		const encoded = hash.substring(6);
 		const bytes = Uint8Array.from(atob(encoded), c => c.charCodeAt(0));
 		const json = new TextDecoder().decode(bytes);
 		const state = JSON.parse(json);
@@ -109,7 +103,6 @@ function loadFromUrl() {
 			pears = state.pears;
 		}
 
-		// Save to localStorage for persistence
 		saveToStorage();
 		return true;
 	} catch (error) {
@@ -119,7 +112,6 @@ function loadFromUrl() {
 }
 
 function handleHashChange() {
-	// Reload from URL when hash changes (e.g., user navigates back/forward)
 	if (loadFromUrl()) {
 		renderSeeds();
 		renderPears();
@@ -129,9 +121,7 @@ function handleHashChange() {
 function shareUrl() {
 	const url = window.location.origin + window.location.pathname + encodeStateToUrl();
 
-	// Copy to clipboard
 	navigator.clipboard.writeText(url).then(() => {
-		// Show success feedback
 		const originalText = shareUrlButton.textContent;
 		shareUrlButton.textContent = MESSAGES.SHARE_SUCCESS;
 		shareUrlButton.style.backgroundColor = '#28a745';
@@ -142,22 +132,18 @@ function shareUrl() {
 		}, UI_TIMINGS.SHARE_FEEDBACK_DURATION);
 	}).catch((error) => {
 		console.warn('Clipboard write failed:', error);
-		// Fallback: show URL in alert for manual copy
 		alert('Share this URL:\n\n' + url);
 	});
 
-	// Update browser URL without reload
 	history.replaceState(null, '', url);
 }
 
-// Setup drop zone for the entire Pear Tree area
 function setupPearTreeDropZone() {
 	pearsDisplay.addEventListener('dragover', handlePearTreeDragOver);
 	pearsDisplay.addEventListener('dragleave', handlePearTreeDragLeave);
 	pearsDisplay.addEventListener('drop', handlePearTreeDrop);
 }
 
-// Event Listeners
 function setupEventListeners() {
 	addSeedButton.addEventListener('click', addSeed);
 	seedNameInput.addEventListener('keypress', (e) => {
@@ -170,7 +156,6 @@ function setupEventListeners() {
 	shareUrlButton.addEventListener('click', shareUrl);
 }
 
-// Seed Management
 function addSeed() {
 	const name = seedNameInput.value.trim();
 	if (name === '' || name.length > 100) return;
@@ -218,7 +203,6 @@ function renderSeeds() {
 		li.setAttribute('aria-label', `Seed: ${seed.name}`);
 		if (isInPear) {
 			li.classList.add('in-pear');
-			// Do NOT set draggable; seed is unavailable once in pear tree
 		} else {
 			li.draggable = true;
 			li.addEventListener('dragstart', e => {
@@ -256,7 +240,6 @@ function renderSeeds() {
 	seedList.appendChild(fragment);
 }
 
-// Fully remove a seed from all pears and seed list
 function updateUI(skipSave = false) {
 	invalidateAssignedIdsCache();
 	if (!skipSave) {
@@ -274,7 +257,6 @@ function removeSeed(id) {
 	updateUI();
 }
 
-// Pear Functions
 function createNewPear(seedIds = []) {
 	const seedArray = Array.isArray(seedIds)
 		? seedIds.filter(id => typeof id === 'number')
@@ -294,7 +276,6 @@ function createPear() {
 	renderPears();
 }
 
-// Fisher-Yates shuffle algorithm for unbiased randomization
 function shuffle(array) {
 	const shuffled = [...array];
 	for (let i = shuffled.length - 1; i > 0; i--) {
@@ -406,12 +387,10 @@ function renderPears() {
 
 		if (pear.locked) pearDiv.classList.add('locked');
 
-		// Drag events for pear
 		pearDiv.addEventListener('dragover', handlePearDragOver);
 		pearDiv.addEventListener('dragleave', handlePearDragLeave);
 		pearDiv.addEventListener('drop', handlePearDrop);
 
-		// Header
 		const header = document.createElement('div');
 		header.className = 'pear-header';
 
@@ -450,7 +429,6 @@ function renderPears() {
 		header.appendChild(title);
 		header.appendChild(actions);
 
-		// Seeds in pear
 		const seedsDiv = document.createElement('div');
 		seedsDiv.className = 'pear-seeds';
 
@@ -489,7 +467,6 @@ function renderPears() {
 			seedsDiv.appendChild(seedDiv);
 		});
 
-		// Count
 		const count = document.createElement('div');
 		count.className = 'pear-count';
 		const seedCount = pear.seeds.length;
@@ -519,7 +496,6 @@ function handlePearSeedDragStart(e) {
 	e.target.classList.add('dragging');
 	e.dataTransfer.effectAllowed = 'move';
 
-	// Remove from current pear (save will happen on drop)
 	pear.seeds = pear.seeds.filter(id => id !== seedId);
 }
 
@@ -541,7 +517,7 @@ function handlePearDragLeave(e) {
 
 function handlePearDrop(e) {
 	e.preventDefault();
-	e.stopPropagation(); // Prevent event from bubbling to pear tree
+	e.stopPropagation();
 	const pearDiv = e.currentTarget;
 	pearDiv.classList.remove('drag-over');
 
@@ -552,19 +528,13 @@ function handlePearDrop(e) {
 
 	if (!pear || pear.locked || !draggedSeed) return;
 
-	// Add seed to pear if not already there (avoid duplicates within same pear)
 	if (!pear.seeds.includes(draggedSeed)) {
 		pear.seeds.push(draggedSeed);
-		updateUI();
-	} else {
-		// If already exists, still need to re-render to restore drag source
-		updateUI();
 	}
+	updateUI();
 }
 
-// Pear Tree drop zone handlers
 function handlePearTreeDragOver(e) {
-	// Only handle if not over a specific pear
 	if (e.target.closest('.pear')) {
 		pearsDisplay.classList.remove('drag-over-empty');
 		return;
@@ -576,14 +546,12 @@ function handlePearTreeDragOver(e) {
 }
 
 function handlePearTreeDragLeave(e) {
-	// Only remove highlight if leaving the entire pear tree area
 	if (e.target === pearsDisplay) {
 		pearsDisplay.classList.remove('drag-over-empty');
 	}
 }
 
 function handlePearTreeDrop(e) {
-	// Only handle if not over a specific pear
 	if (e.target.closest('.pear')) {
 		return;
 	}
@@ -597,5 +565,4 @@ function handlePearTreeDrop(e) {
 	updateUI();
 }
 
-// Initialize on page load
 init();
