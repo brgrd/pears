@@ -181,14 +181,14 @@ main {
 }
 
 /* Seed Management */
-.engineer-input {
+.seed-input {
 	display: flex;
 	gap: 8px;
 	/* Ensure space between input row and first seed item */
 	margin-bottom: 12px;
 }
 
-.engineer-input input {
+.seed-input input {
 	flex: 1;
 	padding: 8px 12px;
 	border: 2px solid var(--border-color);
@@ -196,17 +196,17 @@ main {
 	font-size: 0.9rem;
 }
 
-.engineer-input input:focus {
+.seed-input input:focus {
 	outline: none;
 	border-color: var(--primary-purple);
 }
 
-.engineer-input .btn-sm {
+.seed-input .btn-sm {
 	padding: 8px 12px;
 	min-width: 40px;
 }
 
-.engineer-list {
+.seed-list {
 	list-style: none;
 	display: flex;
 	flex-direction: column;
@@ -216,25 +216,25 @@ main {
 	padding-right: 5px;
 }
 
-.engineer-list::-webkit-scrollbar {
+.seed-list::-webkit-scrollbar {
 	width: 6px;
 }
 
-.engineer-list::-webkit-scrollbar-track {
+.seed-list::-webkit-scrollbar-track {
 	background: var(--very-light-purple);
 	border-radius: 3px;
 }
 
-.engineer-list::-webkit-scrollbar-thumb {
+.seed-list::-webkit-scrollbar-thumb {
 	background: var(--primary-purple);
 	border-radius: 3px;
 }
 
-.engineer-list::-webkit-scrollbar-thumb:hover {
+.seed-list::-webkit-scrollbar-thumb:hover {
 	background: var(--dark-purple);
 }
 
-.engineer-item {
+.seed-item {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -247,35 +247,38 @@ main {
 	cursor: move;
 }
 
-.engineer-item:hover {
+.seed-item:hover {
 	border-color: var(--primary-purple);
 	box-shadow: 0 2px 6px rgba(86, 72, 173, 0.15);
 }
 
-.engineer-item.dragging {
+.seed-item.dragging {
 	opacity: 0.5;
 	cursor: grabbing;
 }
 
-.engineer-item.in-bucket {
+.seed-item.in-pear,
+.seed-item.in-pear {
 	background: var(--very-light-purple);
 	opacity: 0.35;
 	border-color: var(--border-color);
 	cursor: not-allowed;
 }
 
-.engineer-item.in-bucket:hover {
+.seed-item.in-pear:hover,
+.seed-item.in-pear:hover {
 	border-color: var(--border-color);
 	/* no highlight */
 }
 
-.engineer-item.in-bucket .remove-engineer {
+.seed-item.in-pear .remove-seed,
+.seed-item.in-pear .remove-seed {
 	pointer-events: auto;
 	cursor: pointer;
 	opacity: 1;
 }
 
-.engineer-name {
+.seed-name {
 	font-weight: 500;
 	display: flex;
 	align-items: center;
@@ -286,23 +289,23 @@ main {
 	white-space: nowrap;
 }
 
-.engineer-actions {
+.seed-actions {
 	display: flex;
 	gap: 4px;
 }
 
 /* Pear-level OOO */
-.bucket.ooo {
+.pear.ooo {
 	background: linear-gradient(135deg, #fdfaf2 0%, #f0e8c8 100%);
 	border: 2px dashed var(--border-color);
 }
 
-.bucket.ooo .bucket-title {
+.pear.ooo .pear-title {
 	color: #c47c2c;
 	font-weight: 700;
 }
 
-.ooo-bucket-btn {
+.ooo-pear-btn {
 	background: var(--card-background);
 	border: 1px solid var(--border-color);
 	cursor: pointer;
@@ -316,23 +319,23 @@ main {
 	transition: all 0.25s;
 }
 
-.ooo-bucket-btn:hover {
+.ooo-pear-btn:hover {
 	background: var(--primary-purple);
 	color: #fff;
 	border-color: var(--primary-purple);
 }
 
-.bucket.ooo .ooo-bucket-btn {
+.pear.ooo .ooo-pear-btn {
 	background: var(--danger);
 	border-color: var(--danger);
 	color: #fff;
 }
 
-.bucket.ooo .ooo-bucket-btn:hover {
+.pear.ooo .ooo-pear-btn:hover {
 	background: #c82333;
 }
 
-.remove-engineer {
+.remove-seed {
 	background: transparent;
 	border: none;
 	color: var(--danger);
@@ -343,7 +346,7 @@ main {
 	transition: color 0.2s, transform 0.2s;
 }
 
-.remove-engineer:hover {
+.remove-seed:hover {
 	color: #b11e2e;
 	transform: scale(1.08);
 }
@@ -379,7 +382,7 @@ main {
 }
 
 /* Pears Display */
-.buckets-container {
+.pears-container {
 	flex: 1;
 	display: flex;
 	flex-direction: column;
@@ -388,7 +391,7 @@ main {
 	position: relative;
 }
 
-.buckets-display {
+.pears-display {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 18px;
@@ -445,7 +448,7 @@ main {
 	color: #fff;
 }
 
-.bucket {
+.pear {
 	background: var(--card-background);
 	border: 1px solid var(--border-color);
 	border-radius: 12px;
@@ -458,12 +461,12 @@ main {
 	position: relative;
 }
 
-.bucket:hover {
+.pear:hover {
 	border-color: var(--primary-purple);
 	box-shadow: 0 6px 16px rgba(86, 72, 173, 0.15);
 }
 
-.bucket.drag-over {
+.pear.drag-over {
 	background: var(--light-purple);
 	border-color: var(--primary-purple);
 	transform: scale(1.02);
@@ -471,7 +474,7 @@ main {
 	color: #fff;
 }
 
-.bucket-header {
+.pear-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -480,7 +483,7 @@ main {
 	border-bottom: 1px solid var(--border-color);
 }
 
-.bucket-title {
+.pear-title {
 	font-weight: 600;
 	color: var(--primary-purple);
 	font-size: 0.9rem;
@@ -489,13 +492,13 @@ main {
 	gap: 5px;
 }
 
-.bucket-actions {
+.pear-actions {
 	display: flex;
 	gap: 4px;
 }
 
-.delete-bucket-btn,
-.lock-bucket-btn {
+.delete-pear-btn,
+.lock-pear-btn {
 	background: transparent;
 	border: none;
 	cursor: pointer;
@@ -505,39 +508,39 @@ main {
 	transition: background 0.3s;
 }
 
-.delete-bucket-btn {
+.delete-pear-btn {
 	color: var(--danger);
 }
 
-.delete-bucket-btn:hover {
+.delete-pear-btn:hover {
 	background: rgba(220, 53, 69, 0.1);
 }
 
-.lock-bucket-btn {
+.lock-pear-btn {
 	color: var(--text-secondary);
 }
 
-.lock-bucket-btn:hover {
+.lock-pear-btn:hover {
 	background: rgba(86, 72, 173, 0.1);
 }
 
-.bucket.locked {
+.pear.locked {
 	background: linear-gradient(135deg, var(--light-purple) 0%, var(--primary-purple) 100%);
 	border-style: solid;
 	border-color: var(--dark-purple);
 }
 
-.bucket.locked .bucket-title,
-.bucket.locked .bucket-count {
+.pear.locked .pear-title,
+.pear.locked .pear-count {
 	color: white;
 }
 
-.bucket.locked .delete-bucket-btn,
-.bucket.locked .lock-bucket-btn {
+.pear.locked .delete-pear-btn,
+.pear.locked .lock-pear-btn {
 	color: white;
 }
 
-.bucket-engineers {
+.pear-seeds {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
@@ -545,7 +548,7 @@ main {
 	margin-bottom: 8px;
 }
 
-.bucket-engineer {
+.pear-seed {
 	background: white;
 	padding: 8px 10px;
 	border-radius: 6px;
@@ -558,22 +561,22 @@ main {
 	align-items: center;
 }
 
-.bucket-engineer:hover {
+.pear-seed:hover {
 	border-color: var(--primary-purple);
 	box-shadow: 0 2px 6px rgba(86, 72, 173, 0.2);
 }
 
-.bucket-engineer.dragging {
+.pear-seed.dragging {
 	opacity: 0.5;
 	cursor: grabbing;
 }
 
-.bucket.locked .bucket-engineer {
+.pear.locked .pear-seed {
 	cursor: not-allowed;
 	opacity: 0.9;
 }
 
-.bucket-count {
+.pear-count {
 	font-size: 0.8rem;
 	color: var(--text-secondary);
 	margin-top: auto;
@@ -582,11 +585,11 @@ main {
 	border-top: 1px solid var(--border-color);
 }
 
-.bucket.locked .bucket-count {
+.pear.locked .pear-count {
 	color: rgba(255, 255, 255, 0.9);
 }
 
-.remove-from-bucket {
+.remove-from-pear {
 	background: transparent;
 	border: none;
 	color: var(--text-secondary);
@@ -596,7 +599,7 @@ main {
 	transition: color 0.3s;
 }
 
-.remove-from-bucket:hover {
+.remove-from-pear:hover {
 	color: var(--danger);
 }
 
@@ -671,7 +674,7 @@ main {
 		padding: 6px 12px;
 	}
 
-	.engineer-input {
+	.seed-input {
 		flex-direction: row;
 	}
 
@@ -696,11 +699,11 @@ main {
 		width: 100%;
 	}
 
-	.buckets-container {
+	.pears-container {
 		padding: 16px;
 	}
 
-	.buckets-display {
+	.pears-display {
 		justify-content: center;
 		gap: 12px;
 		padding-bottom: 8px;
@@ -714,7 +717,7 @@ main {
 		min-width: unset;
 	}
 
-	.bucket {
+	.pear {
 		width: 100%;
 		max-width: 100%;
 		min-width: unset;

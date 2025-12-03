@@ -23,14 +23,14 @@ let draggedSeed = null;
 let assignedSeedIdsCache = null;
 
 // DOM Elements
-const seedNameInput = document.getElementById('engineerNameInput');
-const addSeedButton = document.getElementById('addEngineerButton');
-const seedList = document.getElementById('engineerList');
-const createPearButton = document.getElementById('createBucketButton');
+const seedNameInput = document.getElementById('seedNameInput');
+const addSeedButton = document.getElementById('addSeedButton');
+const seedList = document.getElementById('seedList');
+const createPearButton = document.getElementById('createPearButton');
 const randomPairButton = document.getElementById('randomPairButton');
-const clearPearsButton = document.getElementById('clearBucketsButton');
+const clearPearsButton = document.getElementById('clearPearsButton');
 const shareUrlButton = document.getElementById('shareUrlButton');
-const pearsDisplay = document.getElementById('bucketsDisplay');
+const pearsDisplay = document.getElementById('pearsDisplay');
 
 // Initialize App
 function init() {
@@ -212,7 +212,7 @@ function renderSeeds() {
 	seeds.forEach(seed => {
 		const isInPear = assignedIds.has(seed.id);
 		const li = document.createElement('li');
-		li.className = 'engineer-item';
+		li.className = 'seed-item';
 		li.dataset.seedId = seed.id;
 		li.setAttribute('role', 'listitem');
 		li.setAttribute('aria-label', `Seed: ${seed.name}`);
@@ -233,12 +233,12 @@ function renderSeeds() {
 			});
 		}
 		const nameSpan = document.createElement('span');
-		nameSpan.className = 'engineer-name';
+		nameSpan.className = 'seed-name';
 		nameSpan.textContent = seed.name;
 		const actionsDiv = document.createElement('div');
-		actionsDiv.className = 'engineer-actions';
+		actionsDiv.className = 'seed-actions';
 		const removeBtn = document.createElement('button');
-		removeBtn.className = 'remove-engineer';
+		removeBtn.className = 'remove-seed';
 		removeBtn.textContent = '×';
 		removeBtn.title = 'Remove seed';
 		removeBtn.setAttribute('aria-label', `Remove ${seed.name}`);
@@ -305,12 +305,23 @@ function shuffle(array) {
 }
 
 function createRandomPairs() {
-	const inPears = pears.flatMap(b => b.seeds);
-	const available = seeds.filter(e => !inPears.includes(e.id));
+	// Get seeds from locked pears (they stay put)
+	const lockedPearSeeds = new Set(pears
+		.filter(b => b.locked)
+		.flatMap(b => b.seeds));
+
+	// Get all seeds that are either unassigned or in unlocked pears
+	const available = seeds.filter(e => !lockedPearSeeds.has(e.id));
+
 	if (available.length < 2) {
 		alert(MESSAGES.INSUFFICIENT_SEEDS);
 		return;
 	}
+
+	// Remove all unlocked pears before reshuffling
+	pears = pears.filter(b => b.locked);
+
+	// Shuffle all available seeds and create new pairs
 	const shuffled = shuffle(available);
 	for (let i = 0; i < shuffled.length; i += 2) {
 		const pair = i + 1 < shuffled.length
@@ -388,7 +399,7 @@ function renderPears() {
 
 	pears.forEach((pear, index) => {
 		const pearDiv = document.createElement('div');
-		pearDiv.className = 'bucket';
+		pearDiv.className = 'pear';
 		pearDiv.dataset.pearId = pear.id;
 		pearDiv.setAttribute('role', 'region');
 		pearDiv.setAttribute('aria-label', `Pear ${index + 1}`);
@@ -402,31 +413,31 @@ function renderPears() {
 
 		// Header
 		const header = document.createElement('div');
-		header.className = 'bucket-header';
+		header.className = 'pear-header';
 
 		const title = document.createElement('div');
-		title.className = 'bucket-title';
+		title.className = 'pear-title';
 		title.textContent = pear.ooo ? `OOO Pear` : `Pear ${index + 1}`;
 		if (pear.ooo) pearDiv.classList.add('ooo');
 
 		const actions = document.createElement('div');
-		actions.className = 'bucket-actions';
+		actions.className = 'pear-actions';
 
 		const lockBtn = document.createElement('button');
-		lockBtn.className = 'lock-bucket-btn';
+		lockBtn.className = 'lock-pear-btn';
 		lockBtn.textContent = pear.locked ? '🔒' : '🔓';
 		lockBtn.title = pear.locked ? 'Unlock pear' : 'Lock pear';
 		lockBtn.setAttribute('aria-label', pear.locked ? 'Unlock pear' : 'Lock pear');
 		lockBtn.onclick = () => togglePearLock(pear.id);
 		const oooBtn = document.createElement('button');
-		oooBtn.className = 'ooo-bucket-btn';
+		oooBtn.className = 'ooo-pear-btn';
 		oooBtn.textContent = pear.ooo ? 'OOO' : 'Active';
 		oooBtn.title = pear.ooo ? 'Mark pear active' : 'Mark pear out of office';
 		oooBtn.setAttribute('aria-label', pear.ooo ? 'Mark pear active' : 'Mark pear out of office');
 		oooBtn.onclick = () => togglePearOOO(pear.id);
 
 		const deleteBtn = document.createElement('button');
-		deleteBtn.className = 'delete-bucket-btn';
+		deleteBtn.className = 'delete-pear-btn';
 		deleteBtn.textContent = '×';
 		deleteBtn.title = 'Delete pear';
 		deleteBtn.setAttribute('aria-label', `Delete pear ${index + 1}`);
@@ -441,14 +452,14 @@ function renderPears() {
 
 		// Seeds in pear
 		const seedsDiv = document.createElement('div');
-		seedsDiv.className = 'bucket-engineers';
+		seedsDiv.className = 'pear-seeds';
 
 		pear.seeds.forEach(seedId => {
 			const seed = seeds.find(e => e.id === seedId);
 			if (!seed) return;
 
 			const seedDiv = document.createElement('div');
-			seedDiv.className = 'bucket-engineer';
+			seedDiv.className = 'pear-seed';
 			seedDiv.draggable = !pear.locked;
 			seedDiv.dataset.seedId = seedId;
 
@@ -464,7 +475,7 @@ function renderPears() {
 			nameSpan.textContent = seed.name;
 
 			const removeBtn = document.createElement('button');
-			removeBtn.className = 'remove-from-bucket';
+			removeBtn.className = 'remove-from-pear';
 			removeBtn.textContent = '×';
 			removeBtn.setAttribute('aria-label', `Remove ${seed.name} from pear`);
 			removeBtn.onclick = () => removeSeedFromPear(pear.id, seedId);
@@ -480,7 +491,7 @@ function renderPears() {
 
 		// Count
 		const count = document.createElement('div');
-		count.className = 'bucket-count';
+		count.className = 'pear-count';
 		const seedCount = pear.seeds.length;
 		count.textContent = seedCount === 1 ? '1 seed' : `${seedCount} seeds`;
 
@@ -496,7 +507,7 @@ function renderPears() {
 
 function handlePearSeedDragStart(e) {
 	const seedId = parseInt(e.target.dataset.seedId);
-	const pearId = parseInt(e.target.closest('.bucket').dataset.pearId);
+	const pearId = parseInt(e.target.closest('.pear').dataset.pearId);
 	const pear = pears.find(b => b.id === pearId);
 
 	if (pear && pear.locked) {
@@ -554,7 +565,7 @@ function handlePearDrop(e) {
 // Pear Tree drop zone handlers
 function handlePearTreeDragOver(e) {
 	// Only handle if not over a specific pear
-	if (e.target.closest('.bucket')) {
+	if (e.target.closest('.pear')) {
 		pearsDisplay.classList.remove('drag-over-empty');
 		return;
 	}
@@ -573,7 +584,7 @@ function handlePearTreeDragLeave(e) {
 
 function handlePearTreeDrop(e) {
 	// Only handle if not over a specific pear
-	if (e.target.closest('.bucket')) {
+	if (e.target.closest('.pear')) {
 		return;
 	}
 
