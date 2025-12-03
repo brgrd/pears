@@ -10,15 +10,21 @@ const engineerList = document.getElementById('engineerList');
 const createBucketButton = document.getElementById('createBucketButton');
 const randomPairButton = document.getElementById('randomPairButton');
 const clearBucketsButton = document.getElementById('clearBucketsButton');
+const shareUrlButton = document.getElementById('shareUrlButton');
 const bucketsDisplay = document.getElementById('bucketsDisplay');
 
 // Initialize App
 function init() {
-	loadFromStorage();
+	// Try loading from URL first, then fall back to localStorage
+	if (!loadFromUrl()) {
+		loadFromStorage();
+	}
 	setupEventListeners();
 	renderEngineers();
 	renderBuckets();
 	setupPearTreeDropZone();
+	// Update URL whenever state changes
+	window.addEventListener('hashchange', handleHashChange);
 }
 
 // Storage Functions
@@ -52,6 +58,73 @@ function loadFromStorage() {
 		.filter(b => b.engineers.length > 0);
 }
 
+// URL Sharing Functions
+function encodeStateToUrl() {
+	const state = { engineers, buckets };
+	const json = JSON.stringify(state);
+	// Use btoa with proper UTF-8 encoding
+	const encoded = btoa(String.fromCharCode(...new TextEncoder().encode(json)));
+	return `#data=${encoded}`;
+}
+
+function loadFromUrl() {
+	const hash = window.location.hash;
+	if (!hash.startsWith('#data=')) return false;
+	
+	try {
+		const encoded = hash.substring(6); // Remove '#data='
+		// Decode with proper UTF-8 support
+		const bytes = Uint8Array.from(atob(encoded), c => c.charCodeAt(0));
+		const json = new TextDecoder().decode(bytes);
+		const state = JSON.parse(json);
+		
+		if (state.engineers && Array.isArray(state.engineers)) {
+			engineers = state.engineers;
+		}
+		if (state.buckets && Array.isArray(state.buckets)) {
+			buckets = state.buckets;
+		}
+		
+		// Save to localStorage for persistence
+		saveToStorage();
+		return true;
+	} catch (e) {
+		console.warn('Failed to load from URL:', e);
+		return false;
+	}
+}
+
+function handleHashChange() {
+	// Reload from URL when hash changes (e.g., user navigates back/forward)
+	if (loadFromUrl()) {
+		renderEngineers();
+		renderBuckets();
+	}
+}
+
+function shareUrl() {
+	const url = window.location.origin + window.location.pathname + encodeStateToUrl();
+	
+	// Copy to clipboard
+	navigator.clipboard.writeText(url).then(() => {
+		// Show success feedback
+		const originalText = shareUrlButton.textContent;
+		shareUrlButton.textContent = 'Copied!';
+		shareUrlButton.style.backgroundColor = '#28a745';
+		
+		setTimeout(() => {
+			shareUrlButton.textContent = originalText;
+			shareUrlButton.style.backgroundColor = '';
+		}, 2000);
+	}).catch(() => {
+		// Fallback: show URL in alert for manual copy
+		alert('Share this URL:\n\n' + url);
+	});
+	
+	// Update browser URL without reload
+	history.replaceState(null, '', url);
+}
+
 // Setup drop zone for the entire Pear Tree area
 function setupPearTreeDropZone() {
 	bucketsDisplay.addEventListener('dragover', handlePearTreeDragOver);
@@ -69,6 +142,7 @@ function setupEventListeners() {
 	createBucketButton.addEventListener('click', createBucket);
 	randomPairButton.addEventListener('click', createRandomPairs);
 	clearBucketsButton.addEventListener('click', clearAllBuckets);
+	shareUrlButton.addEventListener('click', shareUrl);
 }
 
 // Engineer Management
@@ -291,7 +365,7 @@ function renderBuckets() {
 
 		const lockBtn = document.createElement('button');
 		lockBtn.className = 'lock-bucket-btn';
-		lockBtn.textContent = bucket.locked ? '🔒' : '🔓';
+		lockBtn.textContent = bucket.locked ? 'Locked' : 'Lock';
 		lockBtn.title = bucket.locked ? 'Unlock pear' : 'Lock pear';
 		lockBtn.onclick = () => toggleBucketLock(bucket.id);
 		const oooBtn = document.createElement('button');
