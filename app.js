@@ -19,7 +19,7 @@ const UI_TIMINGS = {
 // State Management
 let seeds = [];
 let pears = [];
-let draggedSeed = null;
+let dragContext = null; // { seedId: number, fromPearId: number | null }
 let assignedSeedIdsCache = null;
 
 // DOM Elements
@@ -47,7 +47,6 @@ function init() {
 function saveToStorage() {
 	localStorage.setItem(STORAGE_KEYS.SEEDS, JSON.stringify(seeds));
 	localStorage.setItem(STORAGE_KEYS.PEARS, JSON.stringify(pears));
-	localStorage.removeItem('pearsAuthenticated');
 }
 
 function safeJsonParse(item, fallback = []) {
@@ -66,20 +65,18 @@ function loadFromStorage() {
 
 	// Clean up invalid seed references in pears
 	const validIds = new Set(seeds.map(e => e.id));
-	pears = pears
-		.map(pear => ({
-			...pear,
-			seeds: (pear.seeds || []).filter(id => validIds.has(id))
-		}))
-		.filter(b => b.seeds.length > 0);
+	pears = pears.map(pear => ({
+		...pear,
+		seeds: (pear.seeds || []).filter(id => validIds.has(id))
+	}));
 }
 
 function encodeStateToUrl() {
 	try {
 		const state = { seeds, pears };
 		const json = JSON.stringify(state);
-		const encoded = btoa(String.fromCharCode(...new TextEncoder().encode(json)));
-		return `#data=${encoded}`;
+		const encoded = compressToEncodedURIComponent(json);
+		return `#data=lz:${encoded}`;
 	} catch (error) {
 		console.error('Failed to encode state:', error);
 		return '#';
@@ -92,8 +89,18 @@ function loadFromUrl() {
 
 	try {
 		const encoded = hash.substring(6);
-		const bytes = Uint8Array.from(atob(encoded), c => c.charCodeAt(0));
-		const json = new TextDecoder().decode(bytes);
+		let json;
+
+		if (encoded.startsWith('lz:')) {
+			const decompressed = decompressFromEncodedURIComponent(encoded.substring(3));
+			if (!decompressed) return false;
+			json = decompressed;
+		} else {
+			// Legacy (pre-compression) format: base64 of UTF-8 JSON
+			const bytes = Uint8Array.from(atob(encoded), c => c.charCodeAt(0));
+			json = new TextDecoder().decode(bytes);
+		}
+
 		const state = JSON.parse(json);
 
 		if (state.seeds && Array.isArray(state.seeds)) {
@@ -206,14 +213,14 @@ function renderSeeds() {
 		} else {
 			li.draggable = true;
 			li.addEventListener('dragstart', e => {
-				draggedSeed = seed.id;
+				dragContext = { seedId: seed.id, fromPearId: null };
 				li.classList.add('dragging');
 				e.dataTransfer.effectAllowed = 'move';
 				e.dataTransfer.setData('text/plain', seed.id.toString());
 			});
 			li.addEventListener('dragend', () => {
 				li.classList.remove('dragging');
-				draggedSeed = null;
+				dragContext = null;
 			});
 		}
 		const nameSpan = document.createElement('span');
@@ -353,6 +360,7 @@ function togglePearOOO(pearId) {
 
 function renderPears() {
 	const fragment = document.createDocumentFragment();
+	const seedById = new Map(seeds.map(seed => [seed.id, seed]));
 	const newZone = document.createElement('div');
 	newZone.className = 'new-pear-zone';
 	newZone.setAttribute('role', 'group');
@@ -371,8 +379,16 @@ function renderPears() {
 		e.preventDefault();
 		e.stopPropagation();
 		newZone.classList.remove('drag-over');
-		if (!draggedSeed) return;
-		pears.push(createNewPear(draggedSeed));
+		if (!dragContext) return;
+
+		if (dragContext.fromPearId !== null) {
+			const fromPear = pears.find(b => b.id === dragContext.fromPearId);
+			if (fromPear && Array.isArray(fromPear.seeds)) {
+				fromPear.seeds = fromPear.seeds.filter(id => id !== dragContext.seedId);
+			}
+		}
+
+		pears.push(createNewPear(dragContext.seedId));
 		updateUI();
 	});
 
@@ -396,7 +412,10 @@ function renderPears() {
 
 		const title = document.createElement('div');
 		title.className = 'pear-title';
-		title.textContent = pear.ooo ? `OOO Pear` : `Pear ${index + 1}`;
+		const numberBadge = document.createElement('span');
+		numberBadge.className = 'pear-number';
+		numberBadge.textContent = String(index + 1);
+		title.appendChild(numberBadge);
 		if (pear.ooo) pearDiv.classList.add('ooo');
 
 		const actions = document.createElement('div');
@@ -433,7 +452,7 @@ function renderPears() {
 		seedsDiv.className = 'pear-seeds';
 
 		pear.seeds.forEach(seedId => {
-			const seed = seeds.find(e => e.id === seedId);
+			const seed = seedById.get(seedId);
 			if (!seed) return;
 
 			const seedDiv = document.createElement('div');
@@ -445,7 +464,7 @@ function renderPears() {
 				seedDiv.addEventListener('dragstart', handlePearSeedDragStart);
 				seedDiv.addEventListener('dragend', () => {
 					seedDiv.classList.remove('dragging');
-					draggedSeed = null;
+					dragContext = null;
 				});
 			}
 
@@ -483,8 +502,8 @@ function renderPears() {
 }
 
 function handlePearSeedDragStart(e) {
-	const seedId = parseInt(e.target.dataset.seedId);
-	const pearId = parseInt(e.target.closest('.pear').dataset.pearId);
+	const seedId = Number(e.currentTarget.dataset.seedId);
+	const pearId = Number(e.currentTarget.closest('.pear').dataset.pearId);
 	const pear = pears.find(b => b.id === pearId);
 
 	if (pear && pear.locked) {
@@ -492,11 +511,9 @@ function handlePearSeedDragStart(e) {
 		return;
 	}
 
-	draggedSeed = seedId;
-	e.target.classList.add('dragging');
+	dragContext = { seedId, fromPearId: pearId };
+	e.currentTarget.classList.add('dragging');
 	e.dataTransfer.effectAllowed = 'move';
-
-	pear.seeds = pear.seeds.filter(id => id !== seedId);
 }
 
 function handlePearDragOver(e) {
@@ -521,15 +538,22 @@ function handlePearDrop(e) {
 	const pearDiv = e.currentTarget;
 	pearDiv.classList.remove('drag-over');
 
-	const pearId = parseInt(pearDiv.dataset.pearId);
+	const pearId = Number(pearDiv.dataset.pearId);
 	if (isNaN(pearId)) return;
 
 	const pear = pears.find(b => b.id === pearId);
 
-	if (!pear || pear.locked || !draggedSeed) return;
+	if (!pear || pear.locked || !dragContext) return;
 
-	if (!pear.seeds.includes(draggedSeed)) {
-		pear.seeds.push(draggedSeed);
+	if (dragContext.fromPearId !== null && dragContext.fromPearId !== pearId) {
+		const fromPear = pears.find(b => b.id === dragContext.fromPearId);
+		if (fromPear && Array.isArray(fromPear.seeds)) {
+			fromPear.seeds = fromPear.seeds.filter(id => id !== dragContext.seedId);
+		}
+	}
+
+	if (!pear.seeds.includes(dragContext.seedId)) {
+		pear.seeds.push(dragContext.seedId);
 	}
 	updateUI();
 }
@@ -559,10 +583,411 @@ function handlePearTreeDrop(e) {
 	e.preventDefault();
 	pearsDisplay.classList.remove('drag-over-empty');
 
-	if (!draggedSeed || typeof draggedSeed !== 'number') return;
+	if (!dragContext || typeof dragContext.seedId !== 'number') return;
 
-	pears.push(createNewPear(draggedSeed));
+	if (dragContext.fromPearId !== null) {
+		const fromPear = pears.find(b => b.id === dragContext.fromPearId);
+		if (fromPear && Array.isArray(fromPear.seeds)) {
+			fromPear.seeds = fromPear.seeds.filter(id => id !== dragContext.seedId);
+		}
+	}
+
+	pears.push(createNewPear(dragContext.seedId));
 	updateUI();
+}
+
+// URL-safe string compression (no dependencies)
+// Uses an LZ-based algorithm compatible with "lz-string"-style encodedURIComponent payloads.
+const URL_SAFE_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
+
+function compressToEncodedURIComponent(input) {
+	if (input == null) return '';
+	return _compress(input, 6, a => URL_SAFE_ALPHABET.charAt(a));
+}
+
+function decompressFromEncodedURIComponent(input) {
+	if (input == null) return '';
+	if (input === '') return null;
+	input = input.replace(/ /g, '+');
+	return _decompress(input.length, 32, index => URL_SAFE_ALPHABET.indexOf(input.charAt(index)));
+}
+
+function _compress(uncompressed, bitsPerChar, getCharFromInt) {
+	if (uncompressed == null) return '';
+
+	let i;
+	let value;
+	const contextDictionary = new Map();
+	const contextDictionaryToCreate = new Set();
+	let contextC = '';
+	let contextW = '';
+	let contextWC = '';
+	let contextEnlargeIn = 2;
+	let contextDictSize = 3;
+	let contextNumBits = 2;
+	const contextData = [];
+	let contextDataVal = 0;
+	let contextDataPosition = 0;
+
+	for (let ii = 0; ii < uncompressed.length; ii += 1) {
+		contextC = uncompressed.charAt(ii);
+		if (!contextDictionary.has(contextC)) {
+			contextDictionary.set(contextC, contextDictSize++);
+			contextDictionaryToCreate.add(contextC);
+		}
+
+		contextWC = contextW + contextC;
+		if (contextDictionary.has(contextWC)) {
+			contextW = contextWC;
+		} else {
+			if (contextDictionaryToCreate.has(contextW)) {
+				if (contextW.charCodeAt(0) < 256) {
+					for (i = 0; i < contextNumBits; i++) {
+						contextDataVal = (contextDataVal << 1);
+						if (contextDataPosition === bitsPerChar - 1) {
+							contextDataPosition = 0;
+							contextData.push(getCharFromInt(contextDataVal));
+							contextDataVal = 0;
+						} else {
+							contextDataPosition++;
+						}
+					}
+					value = contextW.charCodeAt(0);
+					for (i = 0; i < 8; i++) {
+						contextDataVal = (contextDataVal << 1) | (value & 1);
+						if (contextDataPosition === bitsPerChar - 1) {
+							contextDataPosition = 0;
+							contextData.push(getCharFromInt(contextDataVal));
+							contextDataVal = 0;
+						} else {
+							contextDataPosition++;
+						}
+						value >>= 1;
+					}
+				} else {
+					value = 1;
+					for (i = 0; i < contextNumBits; i++) {
+						contextDataVal = (contextDataVal << 1) | value;
+						if (contextDataPosition === bitsPerChar - 1) {
+							contextDataPosition = 0;
+							contextData.push(getCharFromInt(contextDataVal));
+							contextDataVal = 0;
+						} else {
+							contextDataPosition++;
+						}
+						value = 0;
+					}
+					value = contextW.charCodeAt(0);
+					for (i = 0; i < 16; i++) {
+						contextDataVal = (contextDataVal << 1) | (value & 1);
+						if (contextDataPosition === bitsPerChar - 1) {
+							contextDataPosition = 0;
+							contextData.push(getCharFromInt(contextDataVal));
+							contextDataVal = 0;
+						} else {
+							contextDataPosition++;
+						}
+						value >>= 1;
+					}
+				}
+				contextEnlargeIn--;
+				if (contextEnlargeIn === 0) {
+					contextEnlargeIn = Math.pow(2, contextNumBits);
+					contextNumBits++;
+				}
+				contextDictionaryToCreate.delete(contextW);
+			} else {
+				value = contextDictionary.get(contextW);
+				for (i = 0; i < contextNumBits; i++) {
+					contextDataVal = (contextDataVal << 1) | (value & 1);
+					if (contextDataPosition === bitsPerChar - 1) {
+						contextDataPosition = 0;
+						contextData.push(getCharFromInt(contextDataVal));
+						contextDataVal = 0;
+					} else {
+						contextDataPosition++;
+					}
+					value >>= 1;
+				}
+			}
+			contextEnlargeIn--;
+			if (contextEnlargeIn === 0) {
+				contextEnlargeIn = Math.pow(2, contextNumBits);
+				contextNumBits++;
+			}
+			contextDictionary.set(contextWC, contextDictSize++);
+			contextW = String(contextC);
+		}
+	}
+
+	if (contextW !== '') {
+		if (contextDictionaryToCreate.has(contextW)) {
+			if (contextW.charCodeAt(0) < 256) {
+				for (i = 0; i < contextNumBits; i++) {
+					contextDataVal = (contextDataVal << 1);
+					if (contextDataPosition === bitsPerChar - 1) {
+						contextDataPosition = 0;
+						contextData.push(getCharFromInt(contextDataVal));
+						contextDataVal = 0;
+					} else {
+						contextDataPosition++;
+					}
+				}
+				value = contextW.charCodeAt(0);
+				for (i = 0; i < 8; i++) {
+					contextDataVal = (contextDataVal << 1) | (value & 1);
+					if (contextDataPosition === bitsPerChar - 1) {
+						contextDataPosition = 0;
+						contextData.push(getCharFromInt(contextDataVal));
+						contextDataVal = 0;
+					} else {
+						contextDataPosition++;
+					}
+					value >>= 1;
+				}
+			} else {
+				value = 1;
+				for (i = 0; i < contextNumBits; i++) {
+					contextDataVal = (contextDataVal << 1) | value;
+					if (contextDataPosition === bitsPerChar - 1) {
+						contextDataPosition = 0;
+						contextData.push(getCharFromInt(contextDataVal));
+						contextDataVal = 0;
+					} else {
+						contextDataPosition++;
+					}
+					value = 0;
+				}
+				value = contextW.charCodeAt(0);
+				for (i = 0; i < 16; i++) {
+					contextDataVal = (contextDataVal << 1) | (value & 1);
+					if (contextDataPosition === bitsPerChar - 1) {
+						contextDataPosition = 0;
+						contextData.push(getCharFromInt(contextDataVal));
+						contextDataVal = 0;
+					} else {
+						contextDataPosition++;
+					}
+					value >>= 1;
+				}
+			}
+			contextEnlargeIn--;
+			if (contextEnlargeIn === 0) {
+				contextEnlargeIn = Math.pow(2, contextNumBits);
+				contextNumBits++;
+			}
+			contextDictionaryToCreate.delete(contextW);
+		} else {
+			value = contextDictionary.get(contextW);
+			for (i = 0; i < contextNumBits; i++) {
+				contextDataVal = (contextDataVal << 1) | (value & 1);
+				if (contextDataPosition === bitsPerChar - 1) {
+					contextDataPosition = 0;
+					contextData.push(getCharFromInt(contextDataVal));
+					contextDataVal = 0;
+				} else {
+					contextDataPosition++;
+				}
+				value >>= 1;
+			}
+		}
+		contextEnlargeIn--;
+		if (contextEnlargeIn === 0) {
+			contextEnlargeIn = Math.pow(2, contextNumBits);
+			contextNumBits++;
+		}
+	}
+
+	value = 2;
+	for (i = 0; i < contextNumBits; i++) {
+		contextDataVal = (contextDataVal << 1) | (value & 1);
+		if (contextDataPosition === bitsPerChar - 1) {
+			contextDataPosition = 0;
+			contextData.push(getCharFromInt(contextDataVal));
+			contextDataVal = 0;
+		} else {
+			contextDataPosition++;
+		}
+		value >>= 1;
+	}
+
+	while (true) {
+		contextDataVal = (contextDataVal << 1);
+		if (contextDataPosition === bitsPerChar - 1) {
+			contextData.push(getCharFromInt(contextDataVal));
+			break;
+		}
+		contextDataPosition++;
+	}
+	return contextData.join('');
+}
+
+function _decompress(length, resetValue, getNextValue) {
+	const dictionary = [];
+	let next;
+	let enlargeIn = 4;
+	let dictSize = 4;
+	let numBits = 3;
+	let entry = '';
+	const result = [];
+	let i;
+	let w;
+	let bits;
+	let resb;
+	let maxpower;
+	let power;
+	let c;
+
+	const data = { val: getNextValue(0), position: resetValue, index: 1 };
+
+	for (i = 0; i < 3; i += 1) {
+		dictionary[i] = i;
+	}
+
+	bits = 0;
+	maxpower = Math.pow(2, 2);
+	power = 1;
+	while (power !== maxpower) {
+		resb = data.val & data.position;
+		data.position >>= 1;
+		if (data.position === 0) {
+			data.position = resetValue;
+			data.val = getNextValue(data.index++);
+		}
+		bits |= (resb > 0 ? 1 : 0) * power;
+		power <<= 1;
+	}
+
+	switch (next = bits) {
+		case 0:
+			bits = 0;
+			maxpower = Math.pow(2, 8);
+			power = 1;
+			while (power !== maxpower) {
+				resb = data.val & data.position;
+				data.position >>= 1;
+				if (data.position === 0) {
+					data.position = resetValue;
+					data.val = getNextValue(data.index++);
+				}
+				bits |= (resb > 0 ? 1 : 0) * power;
+				power <<= 1;
+			}
+			c = String.fromCharCode(bits);
+			break;
+		case 1:
+			bits = 0;
+			maxpower = Math.pow(2, 16);
+			power = 1;
+			while (power !== maxpower) {
+				resb = data.val & data.position;
+				data.position >>= 1;
+				if (data.position === 0) {
+					data.position = resetValue;
+					data.val = getNextValue(data.index++);
+				}
+				bits |= (resb > 0 ? 1 : 0) * power;
+				power <<= 1;
+			}
+			c = String.fromCharCode(bits);
+			break;
+		case 2:
+			return '';
+		default:
+			return null;
+	}
+
+	dictionary[3] = c;
+	w = c;
+	result.push(c);
+
+	while (true) {
+		if (data.index > length) {
+			return '';
+		}
+
+		bits = 0;
+		maxpower = Math.pow(2, numBits);
+		power = 1;
+		while (power !== maxpower) {
+			resb = data.val & data.position;
+			data.position >>= 1;
+			if (data.position === 0) {
+				data.position = resetValue;
+				data.val = getNextValue(data.index++);
+			}
+			bits |= (resb > 0 ? 1 : 0) * power;
+			power <<= 1;
+		}
+
+		switch (c = bits) {
+			case 0:
+				bits = 0;
+				maxpower = Math.pow(2, 8);
+				power = 1;
+				while (power !== maxpower) {
+					resb = data.val & data.position;
+					data.position >>= 1;
+					if (data.position === 0) {
+						data.position = resetValue;
+						data.val = getNextValue(data.index++);
+					}
+					bits |= (resb > 0 ? 1 : 0) * power;
+					power <<= 1;
+				}
+
+				dictionary[dictSize++] = String.fromCharCode(bits);
+				c = dictSize - 1;
+				enlargeIn--;
+				break;
+			case 1:
+				bits = 0;
+				maxpower = Math.pow(2, 16);
+				power = 1;
+				while (power !== maxpower) {
+					resb = data.val & data.position;
+					data.position >>= 1;
+					if (data.position === 0) {
+						data.position = resetValue;
+						data.val = getNextValue(data.index++);
+					}
+					bits |= (resb > 0 ? 1 : 0) * power;
+					power <<= 1;
+				}
+				dictionary[dictSize++] = String.fromCharCode(bits);
+				c = dictSize - 1;
+				enlargeIn--;
+				break;
+			case 2:
+				return result.join('');
+		}
+
+		if (enlargeIn === 0) {
+			enlargeIn = Math.pow(2, numBits);
+			numBits++;
+		}
+
+		if (dictionary[c]) {
+			entry = dictionary[c];
+		} else {
+			if (c === dictSize) {
+				entry = w + w.charAt(0);
+			} else {
+				return null;
+			}
+		}
+		result.push(entry);
+
+		dictionary[dictSize++] = w + entry.charAt(0);
+		enlargeIn--;
+
+		w = entry;
+
+		if (enlargeIn === 0) {
+			enlargeIn = Math.pow(2, numBits);
+			numBits++;
+		}
+	}
 }
 
 init();

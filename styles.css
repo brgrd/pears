@@ -254,7 +254,6 @@ main {
 	cursor: grabbing;
 }
 
-.seed-item.in-pear,
 .seed-item.in-pear {
 	background: var(--very-light-purple);
 	opacity: 0.35;
@@ -262,13 +261,11 @@ main {
 	cursor: not-allowed;
 }
 
-.seed-item.in-pear:hover,
 .seed-item.in-pear:hover {
 	border-color: var(--border-color);
-
+	box-shadow: none;
 }
 
-.seed-item.in-pear .remove-seed,
 .seed-item.in-pear .remove-seed {
 	pointer-events: auto;
 	cursor: pointer;
@@ -378,16 +375,6 @@ main {
 	gap: 8px;
 }
 
-/* Pears Display */
-.pears-container {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	overflow: hidden;
-	padding: 12px;
-	position: relative;
-}
-
 .pears-display {
 	display: flex;
 	flex-wrap: wrap;
@@ -427,7 +414,7 @@ main {
 	width: 50px;
 	height: 50px;
 	margin-bottom: 6px;
-	background-image: url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjkwIDI5MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNDUiIGN5PSIxNDUiIHI9IjE0NSIgZmlsbD0id2hpdGUiLz48ZyBpZD0iWE1MSURfOTk4XyI+PHBhdGggaWQ9IlhNTElEXzE4XyIgc3R5bGU9ImZpbGw6IzkxREM1QTsiIGQ9Ik0yMzEuNzIxLDEuMzY2YzAsMCw3LjY4Miw0My41MzItMTcuMDcsNjguMjg0ICAgYy0yNC43NTQsMjQuNzUzLTY4LjI4NSwxNy4wNzItNjguMjg1LDE3LjA3MnMtOC41MzUtNDIuNjc4LDE3LjA3Mi02OC4yODRDMTg5LjA0My03LjE3LDIzMS43MjEsMS4zNjYsMjMxLjcyMSwxLjM2NnoiLz48cGF0aCBpZD0iWE1MSURfOTk5XyIgc3R5bGU9ImZpbGw6IzgwNEMwOTsiIGQ9Ik0xNjAsNzVjMCw4LjI4NC02LjcxNiwxNS0xNSwxNWwwLDBjLTguMjg0LDAtMTUtNi43MTYtMTUtMTVWMjUgICBjMC04LjI4NCw2LjcxNi0xNSwxNS0xNWwwLDBjOC4yODQsMCwxNSw2LjcxNiwxNSwxNVY3NXoiLz48cGF0aCBpZD0iWE1MSURfMTAwMF8iIHN0eWxlPSJmaWxsOiM3QjY4RUU7IiBkPSJNMjA1LDE0Ny45NzdWMTIwYzAtMzMuMTM3LTI2Ljg2My02MC02MC02MHMtNjAsMjYuODYzLTYwLDYwdjI3Ljk3NyAgIEM2My42NDIsMTYyLjY0Niw1MCwxODQuOTgsNTAsMjEwYzAsNDQuMTgzLDQyLjUzMiw4MCw5NSw4MGM1Mi40NjcsMCw5NS0zNS44MTcsOTUtODBDMjQwLDE4NC45OCwyMjYuMzU3LDE2Mi42NDcsMjA1LDE0Ny45Nzd6Ii8+PHBhdGggaWQ9IlhNTElEXzEwMDFfIiBzdHlsZT0iZmlsbDojNTY0OEFEOyIgZD0iTTE0NSw2MGMtMzMuMTM3LDAtNjAsMjYuODYzLTYwLDYwdjI3Ljk3N0M2My42NDIsMTYyLjY0Niw1MCwxODQuOTgsNTAsMjEwICAgYzAsNDQuMTgzLDQyLjUzMiw4MCw5NSw4MEMxNDUsMjA3LDE0NSwxNTYsMTQ1LDYweiIvPjwvZz48L3N2Zz4=');
+	background-image: url('assets/pear-icon.svg');
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: center;
@@ -487,6 +474,27 @@ main {
 	display: flex;
 	align-items: center;
 	gap: 5px;
+}
+
+.pear-number {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 999px;
+	background: #fff;
+	color: var(--dark-purple);
+	font-weight: 800;
+	font-size: 0.85rem;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.pear.drag-over .pear-number,
+.pear.locked .pear-number,
+.pear.ooo .pear-number {
+	background: #fff;
+	color: var(--dark-purple);
 }
 
 .pear-actions {
@@ -628,11 +636,15 @@ main {
 }
 
 @media (max-width: 768px) {
-
+	.card-header,
+	.section-heading {
+		display: block;
+	}
 
 	.card-header {
 		margin: -16px -16px 12px -16px;
 		padding: 8px 14px;
+		background: var(--very-light-purple);
 		border-top-left-radius: 12px;
 		border-top-right-radius: 12px;
 	}
@@ -667,6 +679,8 @@ main {
 	}
 
 	.section-heading {
+		margin: 0;
+		color: var(--primary-purple);
 		font-size: 1rem;
 		padding: 6px 12px;
 	}
@@ -694,10 +708,6 @@ main {
 
 	.pairing-controls .btn {
 		width: 100%;
-	}
-
-	.pears-container {
-		padding: 16px;
 	}
 
 	.pears-display {
